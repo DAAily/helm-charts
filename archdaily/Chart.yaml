@@ -6,7 +6,7 @@ version: 0.0.12
 appVersion: "0.0.12"
 kubeVersion: ">=v1.18"
 home: https://archdaily.com/
-icon: https://github.com/DAAily/helm-charts/blob/main/Helm_Icon_16px-16px.png
+icon: https://github.com/DAAily/helm-charts/blob/main/Helm_Icon_16px-16px.png?raw=true
 sources:
   - "https://github.com/DAAily/helm-charts/archdaily"
 maintainers:

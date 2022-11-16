@@ -1,0 +1,37 @@
+# Running linters to test Chart files
+name: Chart Linting or Tests
+
+on:
+  issue_comment:
+    types:
+      - created
+      - deleted
+      - edited
+  push:
+    branches:
+      - main
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  chart-linting:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        timeout-minutes: 5
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Configuring Helm
+        timeout-minutes: 5
+        run: |
+          echo "Downloading Helm v3"
+          curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+
+      - name: Run Tests for Charts
+        timeout-minutes: 5
+        run: |
+          helm lint archdaily/ daaily/ --debug --with-subcharts

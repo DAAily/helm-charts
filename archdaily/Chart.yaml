@@ -2,8 +2,8 @@ apiVersion: v2
 name: archdaily
 description: Official AD's Helm Chart
 type: application
-version: 0.0.11
-appVersion: "0.0.11"
+version: 0.0.12
+appVersion: "0.0.12"
 kubeVersion: ">=v1.18"
 home: https://archdaily.com/
 icon: https://github.com/DAAily/helm-charts/blob/main/Helm_Icon_16px-16px.png

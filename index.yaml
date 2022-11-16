@@ -19,4 +19,15 @@ entries:
     urls:
     - https://github.com/DAAily/helm-charts/releases/download/archdaily-0.0.12/archdaily-0.0.12.tgz
     version: 0.0.12
-generated: "2022-11-16T20:20:17.783319372Z"
+  daaily:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2022-11-16T20:21:32.334989171Z"
+    description: A Helm chart for Kubernetes
+    digest: e2db22b560e062703d375b59eff4b23672fd41024838c9044c4d39ac5a1dbbe0
+    name: daaily
+    type: application
+    urls:
+    - https://github.com/DAAily/helm-charts/releases/download/daaily-0.1.0/daaily-0.1.0.tgz
+    version: 0.1.0
+generated: "2022-11-16T20:21:32.334995471Z"

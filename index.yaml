@@ -1,0 +1,22 @@
+apiVersion: v1
+entries:
+  archdaily:
+  - apiVersion: v2
+    appVersion: 0.0.12
+    created: "2022-11-16T20:20:17.783311372Z"
+    description: Official AD's Helm Chart
+    digest: 2426f0ab73b91a8e907bfc1bf4c3bec0fffed486a5a72a69afa8f6f62d69006a
+    home: https://archdaily.com/
+    icon: https://github.com/DAAily/helm-charts/blob/main/Helm_Icon_16px-16px.png
+    kubeVersion: '>=v1.18'
+    maintainers:
+    - email: ops@archdaily.com
+      name: Ops Team
+    name: archdaily
+    sources:
+    - https://github.com/DAAily/helm-charts/archdaily
+    type: application
+    urls:
+    - https://github.com/DAAily/helm-charts/releases/download/archdaily-0.0.12/archdaily-0.0.12.tgz
+    version: 0.0.12
+generated: "2022-11-16T20:20:17.783319372Z"

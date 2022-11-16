@@ -1,0 +1,49 @@
+{{- if .Values.cron.enabled -}}
+{{- range .Values.cron.jobs }}
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: {{ printf "%s-%s" $.Release.Name .name | trunc 63 }}
+  labels:
+    app: {{ printf "%s-%s" $.Release.Name .name | trunc 63 }}
+    version: {{ $.Chart.Version }}
+    release: {{ $.Release.Name }}
+    env: {{ $.Values.image.env }}
+spec:
+  schedule: {{ .schedule | quote }}
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          {{- if not (empty .activeDeadlineSeconds) }}
+          activeDeadlineSeconds: {{ .activeDeadlineSeconds }}
+          {{- end }}
+          restartPolicy: {{ default "Never" .restartPolicy }}
+          tolerations:
+          - key: "worker"
+            operator: "Equal"
+            value: "true"
+            effect: "NoSchedule"
+          nodeSelector:
+            worker: "true"
+          containers:
+          - name: {{ .name }}
+            image: {{ $.Values.image.repository }}:{{ $.Values.image.tag }}
+            env:
+            - name: RAILS_ENV
+              value: {{ $.Values.image.env | quote }}
+            - name: PASSENGER_APP_ENV
+              value: {{ $.Values.image.env | quote }}
+            - name: RAILS_LOG_TO_STDOUT
+              value: "true"
+            {{- range $key, $value := $.Values.rails_env}}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+            command: {{ .command | toJson }}
+            imagePullPolicy: Always
+{{ toYaml $.Values.cron.resources | indent 12 }}
+---
+{{- end -}}
+{{- end -}}

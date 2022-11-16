@@ -1,82 +1,130 @@
-# Default values for archdaily.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
+webapp_defaults: &webapp_defaults
+  resources:
+    limits:
+      cpu: 0.8
+      memory: 512Mi
+    requests:
+      cpu: 0.7
+      memory: 256Mi
 
-replicaCount: 1
+sidekiq_defaults: &sidekiq_defaults
+  resources:
+    limits:
+      cpu: 200m
+      memory: 512Mi
+    requests:
+      cpu: 200m
+      memory: 256Mi
+
+rails_env:
+  # EXAMPLE_HOST: &EXAMPLE_HOST example.com
 
 image:
-  repository: nginx
-  pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  repository: XXXXXXXXXXXX.dkr.ecr.us-east-1.amazonaws.com/organization/example
+  tag: '1.0'
+  env: production
+  branch: master
 
-imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
+deployment:
+  enabled: true
 
-serviceAccount:
-  # Specifies whether a service account should be created
-  create: true
-  # Annotations to add to the service account
-  annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
-  name: ""
+  workingDir: /home/app/webapp # Passenger Docker defaults
+  imagePullPolicy: Always
 
-podAnnotations: {}
+  # HPA basic
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 65
+  targetMemUtilizationPercentage: 80
 
-podSecurityContext: {}
-  # fsGroup: 2000
+  # Pod Disruption Budget
+  pdb:
+    enabled: true
+    maxUnavailable: 1
 
-securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
+  containers:
+  - name: webapp
+    ports:
+    - containerPort: 80
+      protocol: TCP
+    healthcheck:
+      readinessProbe:
+        path: /path/to/readiness
+        timeoutSeconds: 5
+      livenessProbe:
+        path: /path/to/liveness
+        timeoutSeconds: 10
+    <<: *webapp_defaults
 
 service:
-  type: ClusterIP
-  port: 80
+  enabled: true
+  type: NodePort
+
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+    protocol: TCP
+
+external_services: &external_services
+  # - path: /example
+  #   serviceName: example
+  #   servicePort: 80
+  #   externalName: *EXAMPLE_HOST
+
+tgb:
+  enabled: false
+  target_group_arn: aws_target_group_arn
 
 ingress:
-  enabled: false
-  className: ""
-  annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
+  enabled: true
+
+  annotations:
+  # - nginx.ingress.kubernetes.io/proxy-body-size: 100m
+  # - kubernetes.io/ingress.class: nginx
+  # - kubernetes.io/tls-acme: 'true'
+  #
+  # ALB Ingress Controller
+  # - kubernetes.io/ingress.class: alb
+  # - alb.ingress.kubernetes.io/scheme: internet-facing
+
   hosts:
-    - host: chart-example.local
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
+    - example.com
 
-resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+  paths:
+    proxy_pass:
+      *external_services
+    default:
+      - path: / # For alb-ingress, change "/" to "/*"
+        serviceName: ssl-redirect
+        servicePort: use-annotation     
 
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
+      - path: / # For alb-ingress, change "/" to "/*"
+        serviceName: example
+        servicePort: 80
 
-nodeSelector: {}
+cron:
+  enabled: true
+  resources: *sidekiq_defaults
 
-tolerations: []
+  jobs:
+    -
+      name: cronjob-name
+      activeDeadlineSeconds: 300
+      schedule: '* * * * *'  #cron schedule expression
+      command: ['command']
 
-affinity: {}
+background:
+  enabled: true
+  resources: *sidekiq_defaults
+
+  jobs:
+    - name: sidekiq
+      command: ['bundle', 'exec', 'sidekiq', '-C', 'config/sidekiq.yml']
+      graceful_exit: ["bundle", "exec", "sidekiqctl", "stop", "tmp/pids/sidekiq.pid", "30"] # SIGTERM triggers a quick exit; gracefully terminate instead
+
+rake_jobs:
+  enabled: true
+  jobs:
+    - name: emails-prefix
+      command: ['bundle', 'exec', 'rake', 'namespace:task']

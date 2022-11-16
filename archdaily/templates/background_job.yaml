@@ -1,0 +1,51 @@
+{{- if .Values.background.enabled -}}
+{{- range .Values.background.jobs }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ printf "%s-%s" $.Release.Name .name | trunc 63 }}
+  labels:
+    app: {{ printf "%s-%s" $.Release.Name .name | trunc 63 }}
+    version: {{ $.Chart.Version }}
+    release: {{ $.Release.Name }}
+    env: {{ $.Values.image.env }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ printf "%s-%s" $.Release.Name .name | trunc 63 }}
+  template:
+    metadata:
+      labels:
+        app: {{ printf "%s-%s" $.Release.Name .name | trunc 63 }}
+        version: {{ $.Chart.Version }}
+        release: {{ $.Release.Name }}
+        env: {{ $.Values.image.env }}
+    spec:
+      terminationGracePeriodSeconds: 60
+      containers:
+      - name: {{ printf "%s-%s" $.Release.Name .name | trunc 63 }}
+        image: {{ $.Values.image.repository }}:{{ $.Values.image.tag }}
+        env:
+        - name: RAILS_ENV
+          value: {{ $.Values.image.env | quote }}
+        - name: PASSENGER_APP_ENV
+          value: {{ $.Values.image.env | quote }}
+        - name: RAILS_LOG_TO_STDOUT
+          value: "true"
+        {{- range $key, $value := $.Values.rails_env}}
+        - name: {{ $key }}
+          value: {{ $value | quote }}
+        {{- end }}
+        command: {{ .command | toJson }}
+        imagePullPolicy: Always
+        {{- if .graceful_exit }}
+        lifecycle:
+          preStop:
+            exec:
+              command: {{ .graceful_exit | toJson }}
+        {{- end }}
+{{ toYaml $.Values.background.resources | indent 8 }}
+---
+{{- end -}}
+{{- end -}}

@@ -1,0 +1,11 @@
+{{- if .Values.tgb.enabled -}}
+apiVersion: elbv2.k8s.aws/v1beta1
+kind: TargetGroupBinding
+metadata:
+  name: {{ .Release.Name | trunc 63 }}
+spec:
+  serviceRef:
+    name: {{ printf "%s" .Release.Name | trunc 63 }}
+    port: 80
+  targetGroupARN: {{ .Values.tgb.target_group_arn }}
+{{- end -}}

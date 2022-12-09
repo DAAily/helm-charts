@@ -4,7 +4,6 @@ description: Official DAAily's Helm Chart
 type: application
 version: 0.0.12
 appVersion: "0.0.12"
-kubeVersion: ">=v1.18"
 home: https://daaily.com/
 icon: https://github.com/DAAily/helm-charts/blob/main/Helm_Icon_16px-16px.png?raw=true
 sources:

@@ -1,0 +1,41 @@
+{{- if .Values.rake_jobs.enabled }}
+{{ $image := .Values.image }}
+{{- range .Values.rake_jobs.jobs }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ printf "%s-%s" $.Release.Name .name | trunc 63 }}
+  labels:
+    app: {{ printf "%s" $.Release.Name | trunc 63 }}
+    version: {{ $.Chart.Version }}
+    release: {{ $.Release.Name }}
+    env: {{ $image.env }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  ttlSecondsAfterFinished: 60
+  template:
+    spec:
+      containers:
+      - name: {{ .name }}
+        image: {{ $.Values.image.repository }}:{{ $.Values.image.tag }}
+        env:
+        - name: RAILS_ENV
+          value: {{ $.Values.image.env | quote }}
+        - name: PASSENGER_APP_ENV
+          value: {{ $.Values.image.env | quote }}
+        - name: RAILS_LOG_TO_STDOUT
+          value: "true"
+        {{- range $key, $value := $.Values.rails_env}}
+        - name: {{ $key }}
+          value: {{ $value | quote }}
+        {{- end }}
+        command: {{ .command | toJson }}
+{{ toYaml $.Values.cron.resources | indent 8 }}
+      restartPolicy: Never
+
+---
+{{- end }}
+{{- end }}

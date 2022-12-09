@@ -1,61 +1,93 @@
+{{- if .Values.deployment.enabled -}}
+{{- $releaseName := .Release.Name -}}
+{{- $imageRepository := .Values.image.repository -}}
+{{- $imageTag := .Values.image.tag -}}
+{{- $imageEnv := .Values.image.env -}}
+{{- $workingDir := .Values.deployment.workingDir -}}
+{{- $imagePullPolicy := .Values.deployment.imagePullPolicy -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "daaily.fullname" . }}
+  name: {{ printf "%s" .Release.Name | trunc 63 }}
   labels:
-    {{- include "daaily.labels" . | nindent 4 }}
+    app: {{ printf "%s" .Release.Name | trunc 63 }}
+    version: {{ .Chart.Version }}
+    release: {{ .Release.Name }}
+    env: {{ .Values.image.env }}
 spec:
-  {{- if not .Values.autoscaling.enabled }}
-  replicas: {{ .Values.replicaCount }}
-  {{- end }}
   selector:
     matchLabels:
-      {{- include "daaily.selectorLabels" . | nindent 6 }}
+      app: {{ printf "%s" .Release.Name | trunc 63 }}
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 0
+    type: RollingUpdate
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
-      annotations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
       labels:
-        {{- include "daaily.selectorLabels" . | nindent 8 }}
+        app: {{ printf "%s" .Release.Name | trunc 63 }}
+        version: {{ .Chart.Version }}
+        release: {{ .Release.Name }}
+        env: {{ .Values.image.env }}
     spec:
-      {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      serviceAccountName: {{ include "daaily.serviceAccountName" . }}
-      securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
-        - name: {{ .Chart.Name }}
-          securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          ports:
-            - name: http
-              containerPort: 80
-              protocol: TCP
-          livenessProbe:
-            httpGet:
-              path: /
-              port: http
-          readinessProbe:
-            httpGet:
-              path: /
-              port: http
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
-      {{- with .Values.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+      {{- range $container := .Values.deployment.containers }}
+      - name: {{ printf "%s-%s" $releaseName $container.name | trunc 63 }}
+        image: {{ $imageRepository }}:{{ $imageTag }}
+        env:
+        - name: RAILS_ENV
+          value: {{ $imageEnv | quote }}
+        - name: PASSENGER_APP_ENV
+          value: {{ $imageEnv | quote }}
+        - name: RAILS_LOG_TO_STDOUT
+          value: "true"
+        {{- range $key, $value := $.Values.rails_env}}
+        - name: {{ $key }}
+          value: {{ $value | quote }}
+        {{- end }}
+        {{- if $container.ports }}
+        ports:
+{{ toYaml $container.ports | indent 8 }}
+        {{ end -}}
+        {{- if $container.lifecycle -}}
+        lifecycle:
+{{ toYaml $container.lifecycle | indent 10 }}
+        {{ end -}}
+        {{- if $container.healthcheck -}}
+        {{- if $container.healthcheck.readinessProbe -}}
+        readinessProbe:
+          httpGet:
+            path: {{ $container.healthcheck.readinessProbe.path }}
+            port: 80
+            httpHeaders:
+              - name: User-Agent
+                value: readiness-probe
+          initialDelaySeconds: {{ default 30 $container.healthcheck.readinessProbe.initialDelaySeconds }}
+          failureThreshold: 3
+          periodSeconds: 20
+          successThreshold: 1
+          timeoutSeconds: {{ $container.healthcheck.readinessProbe.timeoutSeconds }}
+        {{ end -}}
+        {{- if $container.healthcheck.livenessProbe -}}
+        livenessProbe:
+          httpGet:
+            path: {{ $container.healthcheck.livenessProbe.path }}
+            port: 80
+            httpHeaders:
+              - name: User-Agent
+                value: liveness-probe
+          failureThreshold: 3
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: {{ $container.healthcheck.livenessProbe.timeoutSeconds }}
+        {{ end -}}
+        {{ end -}}
+        {{- if $container.command }}
+        command: {{ $container.command }}
+        {{ end -}}
+        imagePullPolicy: {{ $imagePullPolicy }}
+        resources:
+{{ toYaml $container.resources | indent 10 }}
+      {{ end }}
+{{- end -}}

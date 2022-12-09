@@ -1,0 +1,15 @@
+{{- range .Values.external_services }}
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ printf "%s" $.Release.Name | trunc 63 }}-{{ .serviceName }}-proxy-pass
+  labels:
+    app: {{ printf "%s" $.Release.Name | trunc 63 }}
+    version: {{ $.Chart.Version }}
+    release: {{ $.Release.Name }}
+    env: {{ $.Values.image.env }}
+spec:
+  type: ExternalName
+  externalName: {{ tpl .externalName $ }}
+---
+{{ end }}

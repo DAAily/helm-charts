@@ -1,11 +1,15 @@
+[//]: # (Maintained by OPS Team at Archdaily)
+[//]: # (Sept 2022)
+[//]: # (Style Guide: https://www.markdownguide.org/basic-syntax/)
+
 # helm-charts
 The DAAily and AD's Helm Charts repository.
 
 ## Directory Structure:
-### archdaily
-Contains `Ruby on Rails` current apps. From ArchDaily.
-### daaily
-Contains `FastAPI` current apps. From Daaily.
+
+* `archdaily`: contains `Ruby on Rails` current apps. From ArchDaily.
+
+* `daaily`: contains `FastAPI` current apps. From Daaily.
 
 ### To use them using Helm:
 #### For Daaily/Archdaily:
@@ -51,3 +55,5 @@ helm upgrade release_name ad-stable/chart-ad \
 #### Custom Values
 
 You can use custom values files as you want using `--values` or `-f` flag. To see custom values files exampes go to the `examples` directory inside this repository.
+
+Made with ❤️ by OPS Team at Archdaily.

@@ -1,12 +1,12 @@
-{{- if .Values.deployment.pdb.enabled -}}
+{{- if .Values.pdb.enabled -}}
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
 metadata:
   name: {{ printf "%s" .Release.Name | trunc 63 }}
-  namespace: default
 spec:
-  maxUnavailable: {{ .Values.deployment.pdb.maxUnavailable }}
+  minAvailable: {{required "required minAvailable parameter." .Values.pdb.minAvailable }}
   selector:
     matchLabels:
       app: {{ printf "%s" .Release.Name | trunc 63 }}
+
 {{- end -}}

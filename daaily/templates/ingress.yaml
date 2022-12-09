@@ -1,44 +1,23 @@
 {{- if .Values.ingress.enabled -}}
-{{- $releaseName := .Release.Name -}}
-{{- $imageTag := .Values.image.tag -}}
-{{- $imageEnv := .Values.image.env -}}
-{{- $imageBranch := .Values.image.branch -}}
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ printf "%s" .Release.Name | trunc 63 }}
-  labels:
-    app: {{ printf "%s" .Release.Name | trunc 63 }}
-    version: {{ .Chart.Version }}
-    release: {{ .Release.Name }}
-    env: {{ .Values.image.env }}
-{{- if .Values.ingress.annotations }}
+  {{- if .Values.ingress.annotations }}
   annotations:
     {{ toYaml .Values.ingress.annotations | indent 4 | trim }}
-{{- end }}
+  {{- end }}
 spec:
   rules:
-  {{- range $host := .Values.ingress.hosts }}
-    - http:
+    - host: {{ .Release.Name }}{{ .Values.ingress.host }}
+      http:
         paths:
-        {{- range $item := $.Values.ingress.paths.proxy_pass }}
-        - backend:
-            serviceName: {{ printf "%s" $releaseName | trunc 63 }}-{{ .serviceName }}-proxy-pass
-            servicePort: {{ .servicePort }}
-          path: {{ .path }}
-        {{- end -}}
-        {{- range $item := $.Values.ingress.paths.default }}
-        - backend:
-            {{- if eq .serviceName "ssl-redirect" }}
-            serviceName: ssl-redirect
-            {{- else }}
-            serviceName: {{ printf "%s" $releaseName | trunc 63 }}
-            {{- end}}
-            servicePort: {{ .servicePort }}
-          path: {{ .path }}
-        {{- end -}}
-    {{- if not (empty $host) }}
-      host: {{ tpl $host $ }}
-    {{- end }}
-  {{- end -}}
-{{- end }}
+          - path: {{required "required Ingress Path parameter." .Values.ingress.paths.default.path }}
+            pathType: {{required "required Ingress PathType parameter." .Values.ingress.paths.default.pathType }}
+            backend:
+              service:
+                name: {{required "required Ingress Backend ServiceName parameter." .Values.ingress.paths.default.serviceName }}
+                port:
+                  number: {{required "required Ingress Backend ServicePort parameter." .Values.ingress.paths.default.servicePort }}
+
+{{- end -}}

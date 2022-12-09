@@ -40,7 +40,7 @@ helm repo list
 helm search repo your_repository_name
 ```
 
-#### To Install a release from the Chart:
+#### To Install a release from the Chart (with custom values):
 
 ```bash
 helm upgrade release_name ad-stable/chart-ad \
@@ -54,6 +54,6 @@ helm upgrade release_name ad-stable/chart-ad \
 
 #### Custom Values
 
-You can use custom values files as you want using `--values` or `-f` flag. To see custom values files exampes go to the `examples` directory inside this repository.
+You can use custom values files as you want using `--values` or `-f` flag as you already see in the previous example.
 
 Made with ❤️ by OPS Team at Archdaily.

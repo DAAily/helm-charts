@@ -30,4 +30,21 @@ entries:
     urls:
     - https://github.com/DAAily/helm-charts/releases/download/daaily-0.1.0/daaily-0.1.0.tgz
     version: 0.1.0
-generated: "2022-11-16T20:21:32.334995471Z"
+  - apiVersion: v2
+    appVersion: 0.0.13
+    created: "2022-12-09T21:34:41.129342771Z"
+    description: Official DAAily's Helm Chart
+    digest: 6d85c1a0a3c94d0218f77194b190d4b068ee267d68d19a2bd5b3d66d95aa88c0
+    home: https://daaily.com/
+    icon: https://github.com/DAAily/helm-charts/blob/main/Helm_Icon_16px-16px.png?raw=true
+    maintainers:
+    - email: ops@archdaily.com
+      name: Ops Team
+    name: daaily
+    sources:
+    - https://github.com/DAAily/helm-charts/daaily
+    type: application
+    urls:
+    - https://github.com/DAAily/helm-charts/releases/download/daaily-0.0.13/daaily-0.0.13.tgz
+    version: 0.0.13
+generated: "2022-12-09T21:34:41.129359971Z"

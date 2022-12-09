@@ -37,7 +37,7 @@ helm repo list
 #### To List the apps hosted on the Chart:
 
 ```bash
-helm repo search your_repository_name
+helm search repo your_repository_name
 ```
 
 #### To Install a release from the Chart:

@@ -28,3 +28,4 @@ jobs:
           charts_dir: .
         env:
           CR_TOKEN: "${{ secrets.PAT }}"
+          CR_SKIP_EXISTING: true

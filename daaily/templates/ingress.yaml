@@ -16,7 +16,7 @@ spec:
             pathType: {{required "required Ingress PathType parameter." .Values.ingress.paths.default.pathType }}
             backend:
               service:
-                name: {{required "required Ingress Backend ServiceName parameter." .Values.ingress.paths.default.serviceName }}
+                name: {{ printf "%s" .Release.Name | trunc 63 }}
                 port:
                   number: {{required "required Ingress Backend ServicePort parameter." .Values.ingress.paths.default.servicePort }}
 

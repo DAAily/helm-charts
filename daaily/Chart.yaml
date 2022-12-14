@@ -2,8 +2,8 @@ apiVersion: v2
 name: daaily
 description: Official DAAily's Helm Chart
 type: application
-version: 0.0.14
-appVersion: "0.0.14"
+version: 0.0.15
+appVersion: "0.0.15"
 home: https://daaily.com/
 icon: https://github.com/DAAily/helm-charts/blob/main/Helm_Icon_16px-16px.png?raw=true
 sources:

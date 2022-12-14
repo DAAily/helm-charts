@@ -18,7 +18,7 @@ spec:
       - name: {{ printf "%s" .Release.Name | trunc 63 }}
         image: {{required "required container image parameter." .Values.image.repo }}:{{ .Values.image.tag }}
         command: ["uvicorn"]
-        args: ["app.main:app", "--host", "0.0.0.0", "--port", "8000","--workers", "4"]
+        args: ["app.main:app", "--host", "0.0.0.0", "--port", "80","--workers", "4"]
         imagePullPolicy: {{required "required container imagePullPolicy parameter." .Values.image.imagePullPolicy }}
         livenessProbe:
           httpGet:
